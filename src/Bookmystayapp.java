@@ -1,34 +1,48 @@
 import java.util.Arrays;
 
-public class UseCase18LinearSearch {
+public class UseCase19BinarySearch {
 
-    // Linear Search Method
-    public static boolean linearSearch(String[] bogieIds, String key) {
+    // Binary Search Method
+    public static boolean binarySearch(String[] bogieIds, String key) {
 
-        // Traverse array sequentially
-        for (int i = 0; i < bogieIds.length; i++) {
+        int low = 0;
+        int high = bogieIds.length - 1;
 
-            // Compare using equals()
-            if (bogieIds[i].equals(key)) {
-                return true; // Match found (early termination)
+        while (low <= high) {
+
+            // Compute mid index
+            int mid = (low + high) / 2;
+
+            // Compare using compareTo()
+            int comparison = key.compareTo(bogieIds[mid]);
+
+            if (comparison == 0) {
+                return true; // Found
+            } else if (comparison < 0) {
+                high = mid - 1; // Search left half
+            } else {
+                low = mid + 1; // Search right half
             }
         }
 
-        return false; // No match found
+        return false; // Not found
     }
 
     public static void main(String[] args) {
 
-        // Step 1: Create array of bogie IDs (unsorted)
+        // Step 1: Create sorted bogie IDs
         String[] bogieIds = {"BG101", "BG205", "BG309", "BG412", "BG550"};
 
-        System.out.println("Bogie List: " + Arrays.toString(bogieIds));
+        // Ensure sorting (important precondition)
+        Arrays.sort(bogieIds);
 
-        // Step 2: Search key (can change for testing)
+        System.out.println("Sorted Bogie IDs: " + Arrays.toString(bogieIds));
+
+        // Step 2: Search key
         String searchKey = "BG309";
 
-        // Step 3: Perform search
-        boolean found = linearSearch(bogieIds, searchKey);
+        // Step 3: Perform binary search
+        boolean found = binarySearch(bogieIds, searchKey);
 
         // Step 4: Display result
         if (found) {
@@ -41,21 +55,21 @@ public class UseCase18LinearSearch {
 
         System.out.println("\n--- Additional Tests ---");
 
-        // Not found case
+        // Not found
         System.out.println("Search BG999: " +
-                (linearSearch(bogieIds, "BG999") ? "Found" : "Not Found"));
+                (binarySearch(bogieIds, "BG999") ? "Found" : "Not Found"));
 
-        // First element match
+        // First element
         System.out.println("Search BG101: " +
-                (linearSearch(bogieIds, "BG101") ? "Found" : "Not Found"));
+                (binarySearch(bogieIds, "BG101") ? "Found" : "Not Found"));
 
-        // Last element match
+        // Last element
         System.out.println("Search BG550: " +
-                (linearSearch(bogieIds, "BG550") ? "Found" : "Not Found"));
+                (binarySearch(bogieIds, "BG550") ? "Found" : "Not Found"));
 
-        // Single element array
+        // Single element
         String[] single = {"BG101"};
         System.out.println("Single Array Search BG101: " +
-                (linearSearch(single, "BG101") ? "Found" : "Not Found"));
+                (binarySearch(single, "BG101") ? "Found" : "Not Found"));
     }
 }
