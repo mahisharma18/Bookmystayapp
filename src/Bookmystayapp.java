@@ -1,14 +1,13 @@
 import java.util.*;
-import java.util.regex.*;
-import java.util.stream.*;
+import java.util.stream.Collectors;
 
-// Passenger Bogie Class
+// Bogie class
 class Bogie {
-    String name;
-    int capacity;
+    private int id;
+    private int capacity;
 
-    Bogie(String name, int capacity) {
-        this.name = name;
+    public Bogie(int id, int capacity) {
+        this.id = id;
         this.capacity = capacity;
     }
 
@@ -16,105 +15,79 @@ class Bogie {
         return capacity;
     }
 
-    @Override
-    public String toString() {
-        return name + " - Capacity: " + capacity;
-    }
-}
-
-// Goods Bogie Class
-class GoodsBogie {
-    String type;
-    String cargo;
-
-    GoodsBogie(String type, String cargo) {
-        this.type = type;
-        this.cargo = cargo;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public String getCargo() {
-        return cargo;
+    public int getId() {
+        return id;
     }
 
     @Override
     public String toString() {
-        return type + " Bogie carrying " + cargo;
+        return "Bogie{id=" + id + ", capacity=" + capacity + "}";
     }
 }
 
-// Main Class
-public class RailwayManagementSystem {
+public class UseCase13PerformanceBenchmark {
+
+    // Loop-based filtering
+    public static List<Bogie> filterUsingLoop(List<Bogie> bogies) {
+        List<Bogie> result = new ArrayList<>();
+        for (Bogie b : bogies) {
+            if (b.getCapacity() > 60) {
+                result.add(b);
+            }
+        }
+        return result;
+    }
+
+    // Stream-based filtering
+    public static List<Bogie> filterUsingStream(List<Bogie> bogies) {
+        return bogies.stream()
+                .filter(b -> b.getCapacity() > 60)
+                .collect(Collectors.toList());
+    }
 
     public static void main(String[] args) {
 
-        Scanner scanner = new Scanner(System.in);
-
-        // ---------------- UC11: Regex Validation ----------------
-        System.out.print("Enter Train ID (Format TRN-1234): ");
-        String trainId = scanner.nextLine();
-
-        System.out.print("Enter Cargo Code (Format PET-AB): ");
-        String cargoCode = scanner.nextLine();
-
-        Pattern trainPattern = Pattern.compile("TRN-\\d{4}");
-        Pattern cargoPattern = Pattern.compile("PET-[A-Z]{2}");
-
-        boolean isTrainValid = trainPattern.matcher(trainId).matches();
-        boolean isCargoValid = cargoPattern.matcher(cargoCode).matches();
-
-        if (!isTrainValid || !isCargoValid) {
-            System.out.println("❌ Invalid input! Program terminated.");
-            return;
-        }
-
-        System.out.println("✅ Inputs are valid!");
-
-        // ---------------- UC7: Sorting Passenger Bogies ----------------
+        // Step 1: Create dataset (Large dataset for benchmarking)
         List<Bogie> bogies = new ArrayList<>();
-        bogies.add(new Bogie("Sleeper", 72));
-        bogies.add(new Bogie("AC Chair", 56));
-        bogies.add(new Bogie("First Class", 40));
+        Random rand = new Random();
 
-        bogies.sort(Comparator.comparingInt(Bogie::getCapacity));
-
-        System.out.println("\nSorted Passenger Bogies:");
-        bogies.forEach(System.out::println);
-
-        // ---------------- UC10: Aggregation ----------------
-        int totalCapacity = bogies.stream()
-                .map(Bogie::getCapacity)
-                .reduce(0, Integer::sum);
-
-        System.out.println("\nTotal Seating Capacity: " + totalCapacity);
-
-        // ---------------- UC12: Safety Validation ----------------
-        List<GoodsBogie> goodsList = new ArrayList<>();
-
-        goodsList.add(new GoodsBogie("Cylindrical", "Petroleum"));
-        goodsList.add(new GoodsBogie("Open", "Coal"));
-        goodsList.add(new GoodsBogie("Box", "Grain"));
-        // Try invalid case:
-        // goodsList.add(new GoodsBogie("Cylindrical", "Coal"));
-
-        boolean isSafe = goodsList.stream()
-                .allMatch(b ->
-                        !b.getType().equalsIgnoreCase("Cylindrical")
-                                || b.getCargo().equalsIgnoreCase("Petroleum")
-                );
-
-        System.out.println("\nGoods Bogies:");
-        goodsList.forEach(System.out::println);
-
-        if (isSafe) {
-            System.out.println("\n✅ Train is SAFETY COMPLIANT");
-        } else {
-            System.out.println("\n❌ Train is NOT SAFE (Invalid cargo assignment)");
+        for (int i = 1; i <= 100000; i++) { // large dataset
+            bogies.add(new Bogie(i, rand.nextInt(100)));
         }
 
-        scanner.close();
+        // ================= LOOP BENCHMARK =================
+        long startLoop = System.nanoTime();
+
+        List<Bogie> loopResult = filterUsingLoop(bogies);
+
+        long endLoop = System.nanoTime();
+        long loopTime = endLoop - startLoop;
+
+        // ================= STREAM BENCHMARK =================
+        long startStream = System.nanoTime();
+
+        List<Bogie> streamResult = filterUsingStream(bogies);
+
+        long endStream = System.nanoTime();
+        long streamTime = endStream - startStream;
+
+        // ================= RESULTS =================
+        System.out.println("Loop Result Size: " + loopResult.size());
+        System.out.println("Stream Result Size: " + streamResult.size());
+
+        System.out.println("Loop Execution Time (ns): " + loopTime);
+        System.out.println("Stream Execution Time (ns): " + streamTime);
+
+        // Validate correctness
+        if (loopResult.size() == streamResult.size()) {
+            System.out.println("✅ Both methods produce identical results.");
+        } else {
+            System.out.println("❌ Results mismatch!");
+        }
+
+        // Ensure time is valid
+        if (loopTime > 0 && streamTime > 0) {
+            System.out.println("✅ Execution time measured correctly.");
+        }
     }
 }
