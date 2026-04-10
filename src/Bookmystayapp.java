@@ -1,73 +1,61 @@
-// Custom Runtime Exception
-class CargoSafetyException extends RuntimeException {
-    public CargoSafetyException(String message) {
-        super(message);
-    }
-}
+import java.util.Arrays;
 
-// Goods Bogie Class
-class GoodsBogie {
-    private int id;
-    private String shape; // Rectangular / Cylindrical
-    private String cargo;
+public class UseCase16ManualSorting {
 
-    public GoodsBogie(int id, String shape) {
-        this.id = id;
-        this.shape = shape;
-    }
+    // Bubble Sort Method
+    public static void bubbleSort(int[] arr) {
+        int n = arr.length;
+        boolean swapped;
 
-    public void assignCargo(String cargoType) {
-        try {
-            // Validation Rule
-            if (shape.equalsIgnoreCase("Rectangular") && cargoType.equalsIgnoreCase("Petroleum")) {
-                throw new CargoSafetyException("Unsafe: Cannot assign Petroleum to Rectangular Bogie");
+        // Outer loop for passes
+        for (int i = 0; i < n - 1; i++) {
+            swapped = false;
+
+            // Inner loop for comparison
+            for (int j = 0; j < n - i - 1; j++) {
+
+                // Compare adjacent elements
+                if (arr[j] > arr[j + 1]) {
+
+                    // Swap logic
+                    int temp = arr[j];
+                    arr[j] = arr[j + 1];
+                    arr[j + 1] = temp;
+
+                    swapped = true;
+                }
             }
 
-            // Safe assignment
-            this.cargo = cargoType;
-            System.out.println("✅ Cargo assigned successfully: " + cargoType + " to Bogie " + id);
-
-        } catch (CargoSafetyException e) {
-            // Handle exception
-            System.out.println("❌ Error: " + e.getMessage());
-
-        } finally {
-            // Always executes
-            System.out.println("🔄 Assignment attempt completed for Bogie " + id);
+            // Optimization: stop if already sorted
+            if (!swapped) {
+                break;
+            }
         }
     }
 
-    public String getCargo() {
-        return cargo;
-    }
-
-    public String getShape() {
-        return shape;
-    }
-}
-
-// Main Class
-public class UseCase15CargoHandling {
-
     public static void main(String[] args) {
 
-        // Create bogies
-        GoodsBogie b1 = new GoodsBogie(1, "Cylindrical");
-        GoodsBogie b2 = new GoodsBogie(2, "Rectangular");
+        // Test dataset (can modify for testing)
+        int[] capacities = {72, 56, 24, 70, 60};
 
-        // Safe assignment
-        b1.assignCargo("Petroleum");
+        System.out.println("Original Capacities: " + Arrays.toString(capacities));
 
-        System.out.println();
+        // Perform Bubble Sort
+        bubbleSort(capacities);
 
-        // Unsafe assignment (handled safely)
-        b2.assignCargo("Petroleum");
+        System.out.println("Sorted Capacities:   " + Arrays.toString(capacities));
 
-        System.out.println();
+        // Additional test cases
+        int[] duplicateArray = {72, 56, 56, 24};
+        bubbleSort(duplicateArray);
+        System.out.println("Duplicate Sorted:    " + Arrays.toString(duplicateArray));
 
-        // Program continues after exception
-        b2.assignCargo("Coal");
+        int[] singleElement = {50};
+        bubbleSort(singleElement);
+        System.out.println("Single Element:      " + Arrays.toString(singleElement));
 
-        System.out.println("\n✅ Program continues execution safely.");
+        int[] allEqual = {40, 40, 40};
+        bubbleSort(allEqual);
+        System.out.println("All Equal:           " + Arrays.toString(allEqual));
     }
 }
