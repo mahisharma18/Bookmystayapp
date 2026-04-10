@@ -1,7 +1,8 @@
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.regex.*;
+import java.util.stream.*;
 
-// Bogie class
+// Bogie Class
 class Bogie {
     String name;
     int capacity;
@@ -11,39 +12,84 @@ class Bogie {
         this.capacity = capacity;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    @Override
     public String toString() {
-        return name + "(" + capacity + ")";
+        return name + " - Capacity: " + capacity;
     }
 }
 
-public class TrainConsistApp {
+// Main Application
+public class RailwayManagementSystem {
 
     public static void main(String[] args) {
 
-        // Welcome Message
-        System.out.println("=== Train Consist Management App ===");
+        Scanner scanner = new Scanner(System.in);
 
-        // Create list of bogies
+        // ---------------- UC11: Regex Validation ----------------
+        System.out.print("Enter Train ID (Format TRN-1234): ");
+        String trainId = scanner.nextLine();
+
+        System.out.print("Enter Cargo Code (Format PET-AB): ");
+        String cargoCode = scanner.nextLine();
+
+        // Regex Patterns
+        Pattern trainPattern = Pattern.compile("TRN-\\d{4}");
+        Pattern cargoPattern = Pattern.compile("PET-[A-Z]{2}");
+
+        Matcher trainMatcher = trainPattern.matcher(trainId);
+        Matcher cargoMatcher = cargoPattern.matcher(cargoCode);
+
+        boolean isTrainValid = trainMatcher.matches();
+        boolean isCargoValid = cargoMatcher.matches();
+
+        if (!isTrainValid) {
+            System.out.println("❌ Invalid Train ID format!");
+        } else {
+            System.out.println("✅ Valid Train ID");
+        }
+
+        if (!isCargoValid) {
+            System.out.println("❌ Invalid Cargo Code format!");
+        } else {
+            System.out.println("✅ Valid Cargo Code");
+        }
+
+        // Continue only if valid
+        if (!isTrainValid || !isCargoValid) {
+            System.out.println("Program terminated due to invalid input.");
+            return;
+        }
+
+        // ---------------- UC7: Sorting using Comparator ----------------
         List<Bogie> bogies = new ArrayList<>();
+
         bogies.add(new Bogie("Sleeper", 72));
         bogies.add(new Bogie("AC Chair", 56));
-        bogies.add(new Bogie("First Class", 24));
-        bogies.add(new Bogie("Luxury", 80));
+        bogies.add(new Bogie("First Class", 40));
 
-        // Stream pipeline: map + reduce
-        int totalCapacity = bogies.stream()
-                .map(b -> b.capacity)          // extract capacity
-                .reduce(0, Integer::sum);      // aggregate (sum)
+        // Sort by capacity
+        bogies.sort(Comparator.comparingInt(Bogie::getCapacity));
 
-        // Display result
-        System.out.println("\nTotal Seating Capacity: " + totalCapacity);
-
-        // Verify original list unchanged
-        System.out.println("\nOriginal Bogie List:");
+        System.out.println("\nSorted Bogies (by Capacity):");
         for (Bogie b : bogies) {
             System.out.println(b);
         }
 
-        // Program continues...
+        // ---------------- UC10: Aggregation using reduce() ----------------
+        int totalCapacity = bogies.stream()
+                .map(Bogie::getCapacity)
+                .reduce(0, Integer::sum);
+
+        System.out.println("\nTotal Seating Capacity: " + totalCapacity);
+
+        scanner.close();
     }
 }
