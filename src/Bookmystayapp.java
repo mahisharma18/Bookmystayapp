@@ -1,40 +1,61 @@
 import java.util.Arrays;
 
-public class UseCase17BuiltInSorting {
+public class UseCase18LinearSearch {
+
+    // Linear Search Method
+    public static boolean linearSearch(String[] bogieIds, String key) {
+
+        // Traverse array sequentially
+        for (int i = 0; i < bogieIds.length; i++) {
+
+            // Compare using equals()
+            if (bogieIds[i].equals(key)) {
+                return true; // Match found (early termination)
+            }
+        }
+
+        return false; // No match found
+    }
 
     public static void main(String[] args) {
 
-        // Step 1: Create array of bogie type names
-        String[] bogieTypes = {"Sleeper", "AC Chair", "First Class", "General", "Luxury"};
+        // Step 1: Create array of bogie IDs (unsorted)
+        String[] bogieIds = {"BG101", "BG205", "BG309", "BG412", "BG550"};
 
-        System.out.println("Original Bogie Types: " + Arrays.toString(bogieTypes));
+        System.out.println("Bogie List: " + Arrays.toString(bogieIds));
 
-        // Step 2: Sort using built-in method
-        Arrays.sort(bogieTypes);
+        // Step 2: Search key (can change for testing)
+        String searchKey = "BG309";
 
-        // Step 3: Display sorted result
-        System.out.println("Sorted Bogie Types:   " + Arrays.toString(bogieTypes));
+        // Step 3: Perform search
+        boolean found = linearSearch(bogieIds, searchKey);
 
-        // Additional Test Cases
+        // Step 4: Display result
+        if (found) {
+            System.out.println("✅ Bogie ID " + searchKey + " FOUND.");
+        } else {
+            System.out.println("❌ Bogie ID " + searchKey + " NOT FOUND.");
+        }
 
-        // Unsorted input
-        String[] unsorted = {"Luxury", "General", "Sleeper", "AC Chair"};
-        Arrays.sort(unsorted);
-        System.out.println("Unsorted → Sorted:    " + Arrays.toString(unsorted));
+        // Additional test cases
 
-        // Already sorted
-        String[] sorted = {"AC Chair", "First Class", "General"};
-        Arrays.sort(sorted);
-        System.out.println("Already Sorted:       " + Arrays.toString(sorted));
+        System.out.println("\n--- Additional Tests ---");
 
-        // Duplicate values
-        String[] duplicates = {"Sleeper", "AC Chair", "Sleeper", "General"};
-        Arrays.sort(duplicates);
-        System.out.println("Duplicates Sorted:    " + Arrays.toString(duplicates));
+        // Not found case
+        System.out.println("Search BG999: " +
+                (linearSearch(bogieIds, "BG999") ? "Found" : "Not Found"));
 
-        // Single element
-        String[] single = {"Sleeper"};
-        Arrays.sort(single);
-        System.out.println("Single Element:       " + Arrays.toString(single));
+        // First element match
+        System.out.println("Search BG101: " +
+                (linearSearch(bogieIds, "BG101") ? "Found" : "Not Found"));
+
+        // Last element match
+        System.out.println("Search BG550: " +
+                (linearSearch(bogieIds, "BG550") ? "Found" : "Not Found"));
+
+        // Single element array
+        String[] single = {"BG101"};
+        System.out.println("Single Array Search BG101: " +
+                (linearSearch(single, "BG101") ? "Found" : "Not Found"));
     }
 }
