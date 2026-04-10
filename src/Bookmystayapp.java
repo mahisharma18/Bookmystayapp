@@ -2,7 +2,7 @@ import java.util.*;
 import java.util.regex.*;
 import java.util.stream.*;
 
-// Bogie Class
+// Passenger Bogie Class
 class Bogie {
     String name;
     int capacity;
@@ -10,10 +10,6 @@ class Bogie {
     Bogie(String name, int capacity) {
         this.name = name;
         this.capacity = capacity;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public int getCapacity() {
@@ -26,7 +22,31 @@ class Bogie {
     }
 }
 
-// Main Application
+// Goods Bogie Class
+class GoodsBogie {
+    String type;
+    String cargo;
+
+    GoodsBogie(String type, String cargo) {
+        this.type = type;
+        this.cargo = cargo;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public String getCargo() {
+        return cargo;
+    }
+
+    @Override
+    public String toString() {
+        return type + " Bogie carrying " + cargo;
+    }
+}
+
+// Main Class
 public class RailwayManagementSystem {
 
     public static void main(String[] args) {
@@ -40,55 +60,60 @@ public class RailwayManagementSystem {
         System.out.print("Enter Cargo Code (Format PET-AB): ");
         String cargoCode = scanner.nextLine();
 
-        // Regex Patterns
         Pattern trainPattern = Pattern.compile("TRN-\\d{4}");
         Pattern cargoPattern = Pattern.compile("PET-[A-Z]{2}");
 
-        Matcher trainMatcher = trainPattern.matcher(trainId);
-        Matcher cargoMatcher = cargoPattern.matcher(cargoCode);
+        boolean isTrainValid = trainPattern.matcher(trainId).matches();
+        boolean isCargoValid = cargoPattern.matcher(cargoCode).matches();
 
-        boolean isTrainValid = trainMatcher.matches();
-        boolean isCargoValid = cargoMatcher.matches();
-
-        if (!isTrainValid) {
-            System.out.println("❌ Invalid Train ID format!");
-        } else {
-            System.out.println("✅ Valid Train ID");
-        }
-
-        if (!isCargoValid) {
-            System.out.println("❌ Invalid Cargo Code format!");
-        } else {
-            System.out.println("✅ Valid Cargo Code");
-        }
-
-        // Continue only if valid
         if (!isTrainValid || !isCargoValid) {
-            System.out.println("Program terminated due to invalid input.");
+            System.out.println("❌ Invalid input! Program terminated.");
             return;
         }
 
-        // ---------------- UC7: Sorting using Comparator ----------------
-        List<Bogie> bogies = new ArrayList<>();
+        System.out.println("✅ Inputs are valid!");
 
+        // ---------------- UC7: Sorting Passenger Bogies ----------------
+        List<Bogie> bogies = new ArrayList<>();
         bogies.add(new Bogie("Sleeper", 72));
         bogies.add(new Bogie("AC Chair", 56));
         bogies.add(new Bogie("First Class", 40));
 
-        // Sort by capacity
         bogies.sort(Comparator.comparingInt(Bogie::getCapacity));
 
-        System.out.println("\nSorted Bogies (by Capacity):");
-        for (Bogie b : bogies) {
-            System.out.println(b);
-        }
+        System.out.println("\nSorted Passenger Bogies:");
+        bogies.forEach(System.out::println);
 
-        // ---------------- UC10: Aggregation using reduce() ----------------
+        // ---------------- UC10: Aggregation ----------------
         int totalCapacity = bogies.stream()
                 .map(Bogie::getCapacity)
                 .reduce(0, Integer::sum);
 
         System.out.println("\nTotal Seating Capacity: " + totalCapacity);
+
+        // ---------------- UC12: Safety Validation ----------------
+        List<GoodsBogie> goodsList = new ArrayList<>();
+
+        goodsList.add(new GoodsBogie("Cylindrical", "Petroleum"));
+        goodsList.add(new GoodsBogie("Open", "Coal"));
+        goodsList.add(new GoodsBogie("Box", "Grain"));
+        // Try invalid case:
+        // goodsList.add(new GoodsBogie("Cylindrical", "Coal"));
+
+        boolean isSafe = goodsList.stream()
+                .allMatch(b ->
+                        !b.getType().equalsIgnoreCase("Cylindrical")
+                                || b.getCargo().equalsIgnoreCase("Petroleum")
+                );
+
+        System.out.println("\nGoods Bogies:");
+        goodsList.forEach(System.out::println);
+
+        if (isSafe) {
+            System.out.println("\n✅ Train is SAFETY COMPLIANT");
+        } else {
+            System.out.println("\n❌ Train is NOT SAFE (Invalid cargo assignment)");
+        }
 
         scanner.close();
     }
