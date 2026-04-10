@@ -1,133 +1,104 @@
-import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 
-/**
- * MAIN CLASS - UseCase11ConcurrentBookingSimulation
- *
- * Simulates multiple users attempting to book rooms concurrently.
- * Demonstrates race conditions and synchronization.
- */
-public class UseCase11ConcurrentBookingSimulation {
+public class UseCase12DataPersistenceRecovery {
 
+    // ================= RoomInventory =================
+    static class RoomInventory {
+        private Map<String, Integer> rooms = new HashMap<>();
+
+        public void setRoomCount(String type, int count) {
+            rooms.put(type, count);
+        }
+
+        public int getRoomCount(String type) {
+            return rooms.getOrDefault(type, 0);
+        }
+
+        public Map<String, Integer> getAllRooms() {
+            return rooms;
+        }
+
+        public void clear() {
+            rooms.clear();
+        }
+    }
+
+    // ================= FilePersistenceService =================
+    static class FilePersistenceService {
+
+        // Save inventory to file
+        public void saveInventory(RoomInventory inventory, String filePath) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+                for (Map.Entry<String, Integer> entry : inventory.getAllRooms().entrySet()) {
+                    writer.write(entry.getKey() + "=" + entry.getValue());
+                    writer.newLine();
+                }
+                System.out.println("Inventory saved successfully.");
+            } catch (IOException e) {
+                System.out.println("Error saving inventory: " + e.getMessage());
+            }
+        }
+
+        // Load inventory from file
+        public void loadInventory(RoomInventory inventory, String filePath) {
+            File file = new File(filePath);
+
+            if (!file.exists()) {
+                System.out.println("No valid inventory data found. Starting fresh.");
+                return;
+            }
+
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                inventory.clear();
+                String line;
+
+                while ((line = reader.readLine()) != null) {
+                    String[] parts = line.split("=");
+
+                    if (parts.length == 2) {
+                        String roomType = parts[0];
+                        int count = Integer.parseInt(parts[1]);
+                        inventory.setRoomCount(roomType, count);
+                    }
+                }
+
+                System.out.println("Inventory loaded successfully.");
+
+            } catch (IOException | NumberFormatException e) {
+                System.out.println("Error loading inventory: " + e.getMessage());
+            }
+        }
+    }
+
+    // ================= Main Method =================
     public static void main(String[] args) {
 
-        // Shared resources
-        Queue<String> bookingQueue = new ConcurrentLinkedQueue<>();
-        RoomInventory inventory = new RoomInventory(5); // 5 rooms
-        AllocationService allocationService = new AllocationService();
+        String filePath = "inventory.txt";
 
-        // Add booking requests
-        for (int i = 1; i <= 10; i++) {
-            bookingQueue.add("User-" + i);
+        RoomInventory inventory = new RoomInventory();
+        FilePersistenceService service = new FilePersistenceService();
+
+        System.out.println("System Recovery");
+
+        // Load existing data
+        service.loadInventory(inventory, filePath);
+
+        // If no data, initialize default values
+        if (inventory.getAllRooms().isEmpty()) {
+            inventory.setRoomCount("Single", 5);
+            inventory.setRoomCount("Double", 3);
+            inventory.setRoomCount("Suite", 2);
         }
 
-        // Create booking processor tasks
-        Thread t1 = new Thread(
-                new ConcurrentBookingProcessor(bookingQueue, inventory, allocationService),
-                "Processor-1"
-        );
-
-        Thread t2 = new Thread(
-                new ConcurrentBookingProcessor(bookingQueue, inventory, allocationService),
-                "Processor-2"
-        );
-
-        // Start concurrent processing
-        t1.start();
-        t2.start();
-
-        // Wait for threads to finish
-        try {
-            t1.join();
-            t2.join();
-        } catch (InterruptedException e) {
-            System.out.println("Thread execution interrupted.");
+        // Display inventory
+        System.out.println("\nCurrent Inventory:");
+        for (String type : inventory.getAllRooms().keySet()) {
+            System.out.println(type + ": " + inventory.getRoomCount(type));
         }
 
-        System.out.println("\nAll bookings processed.");
-        System.out.println("Remaining rooms: " + inventory.getAvailableRooms());
-    }
-}
-
-/**
- * Shared Room Inventory
- */
-class RoomInventory {
-    private int availableRooms;
-
-    public RoomInventory(int rooms) {
-        this.availableRooms = rooms;
-    }
-
-    public int getAvailableRooms() {
-        return availableRooms;
-    }
-
-    // Synchronized method to prevent race condition
-    public synchronized boolean bookRoom(String user) {
-        if (availableRooms > 0) {
-            System.out.println(user + " is booking a room...");
-            availableRooms--;
-
-            // Simulate delay (makes race conditions visible)
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-
-            System.out.println("✅ Room booked for " + user +
-                    " | Remaining: " + availableRooms);
-            return true;
-        } else {
-            System.out.println("❌ No rooms available for " + user);
-            return false;
-        }
-    }
-}
-
-/**
- * Handles allocation logic
- */
-class AllocationService {
-
-    public void allocate(String user, RoomInventory inventory) {
-        inventory.bookRoom(user);
-    }
-}
-
-/**
- * Booking Processor (Runnable task)
- */
-class ConcurrentBookingProcessor implements Runnable {
-
-    private Queue<String> bookingQueue;
-    private RoomInventory inventory;
-    private AllocationService allocationService;
-
-    public ConcurrentBookingProcessor(
-            Queue<String> bookingQueue,
-            RoomInventory inventory,
-            AllocationService allocationService
-    ) {
-        this.bookingQueue = bookingQueue;
-        this.inventory = inventory;
-        this.allocationService = allocationService;
-    }
-
-    @Override
-    public void run() {
-        while (true) {
-            String user = bookingQueue.poll();
-
-            if (user == null) {
-                break; // No more bookings
-            }
-
-            System.out.println(Thread.currentThread().getName()
-                    + " processing " + user);
-
-            allocationService.allocate(user, inventory);
-        }
+        // Save inventory
+        service.saveInventory(inventory, filePath);
     }
 }
