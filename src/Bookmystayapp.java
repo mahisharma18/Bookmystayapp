@@ -1,9 +1,5 @@
 import java.util.*;
 
-/**
- * CLASS - AddOnService
- * Represents an optional add-on service.
- */
 class AddOnService {
 
     private String serviceName;
@@ -23,10 +19,6 @@ class AddOnService {
     }
 }
 
-/**
- * CLASS - AddOnServiceManager
- * Manages services linked to reservations.
- */
 class AddOnServiceManager {
 
     private Map<String, List<AddOnService>> servicesByReservation;
@@ -54,9 +46,6 @@ class AddOnServiceManager {
     }
 }
 
-/**
- * MAIN CLASS
- */
 public class UseCase7AddOnServiceSelection {
 
     public static void main(String[] args) {
